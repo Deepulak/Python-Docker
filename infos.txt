@@ -1,0 +1,345 @@
+While the Docker CLI includes a huge variety of commands and
+sub-commands, the most common commands that we will work with in
+this book are as mentioned:
+
+docker build
+
+docker pull
+
+docker run
+
+docker exec
+
+for more information we can check the docker documentation web page
+
+### api request command
+
+So, if the registry is hosted on docker-private.
+registry and is being served on 1337 port, the pull command will now be:
+docker pull docker-private.registry:1337/nginx
+If the registry needs authentication, you can log in to the registry by
+typing docker login:
+docker login docker-private.registry:1337
+
+
+Now that you have the image, try to start a container. To start a
+container and run the associated image, you have to type docker run.
+docker run -p 80:80 nginx
+
+
+for running container type
+
+sudo docker run -p 8080:80
+
+for view the running server type
+
+curl http://localhost:8080
+
+for view all the process run on the docker type
+
+docker ps
+
+for stopping a running process type
+
+docker stop <container-id>
+
+for view all the running and existing container image type
+
+docker ps -a
+
+for remove a container type
+
+docker rm <container-id>
+
+for view all the image present in the system type 
+
+docker images ls
+
+for removing an image type
+
+docker rmi <docker-id>
+
+
+##################################
+1704596146:AAGnMzXBwHCgAsI_m8QhnKtBsLsJc6fsRU8
+#########
+
+
+for build a docker image type
+
+docker build (image pat)
+
+for run the image we need a docker id
+so when we run the build process we get a id and thats we need for the 
+running proccess
+
+docker run (id)
+
+FOR REMIND docker details we can add something more like this
+
+docker tag image_id tag_name
+
+docker tag 7aekjfdsk dock:hello-world
+
+for inspecting envirooment with this command
+
+docker inspect d:env-example | jq .[0].Config.Env
+
+
+The environment variables defined for a container can be changed
+when running a container by the -e flag. In this example, let’s change the
+LOGS_DIR value to /logs for a container. This is achieved by:
+
+docker run -it -e LOGS_DIR="/logs" sathyabhat:env-example
+
+for run a docker server the command 
+
+docker build -t d:web
+
+To run this container, you have to provide the host port to which it is to
+be mapped. Let’s map port 8080 on the host to port 80 of the container. To
+do that, type this command:
+
+
+docker run -d -p 8080:80 sathyabhat:web
+
+
+The -d flag makes the nginx container run in the background; the -p
+flag does the port mapping. Let’s confirm that the container is running:
+
+curl http://localhost:8080
+
+
+this is from chapter 6
+
+
+NIC - Network Interface Card
+
+
+Bridge Networks
+Before we work on creating a bridge network, let’s create a MySQL and
+Adminer container on the default bridge network.
+To create the MySQL container, use this command:
+docker run -d --name mysql -p 3306:3306 -e MYSQL_ROOT_
+PASSWORD=dontusethisinprod mysql
+
+
+Since you are starting in detached mode (as specified by the -d flag),
+follow the logs until you are certain the container is up.
+docker logs -f mysql
+The result should be along the lines of the following:
+
+
+
+If you see the last set of lines, the MySQL database container is ready.
+Let’s create the Adminer container:
+docker run -d --name adminer -p 8080:8080 adminer
+Following the logs of Adminer:
+docker logs -f adminer
+PHP 7.2.4 Development Server started
+That means Adminer is ready. Let’s look at the two containers.
+Specifically, the networking aspects of them
+
+Specifically, the networking aspects of them.
+docker inspect mysql | jq .[0].NetworkSettings.Networks
+
+
+
+You now know that the MySQL container has been assigned an IP
+address of 172.17.0.2 on the default bridge network. Now examine the
+Adminer container:
+docker inspect adminer | jq .[0].NetworkSettings.Networks
+
+
+The Adminer container is associated with IP address of 172.17.0.3
+within the bridge network. However, since both containers are bound to
+the host IP of 0.0.0.0 and translated to all interfaces of the Docker host, you
+should be able to connect to either by its port.
+However, as you learned, the default bridge network does not perform
+DNS resolution by the service name, and neither does it let us connect
+via the container’s service name—only via IPs. To demonstrate this, try to
+connect to the database via Adminer. Navigate to http://locolhost:8080.
+
+
+from the server option we need to give there the adminer ip
+
+and fill the password and the user name
+
+
+Let’s create a database network and try to connect MySQL and the
+Adminer container to the network. We can create a bridge network by
+typing the following command:
+docker network create database <network name>
+
+
+
+Note that the created network has a subnet of 172.25.0.0/16. Let’s stop
+and remove the existing containers:
+docker
+docker
+docker
+docker
+stop adminer
+rm adminer
+Docker lets us connect a container to another network on the fly very
+easily. To do this, type the following command:
+dockr network connect <network name> <container name>
+Since you need to connect the Adminer container to the database
+network, the command looks as so:
+docker network connect database adminer
+stop mysql
+rm mysql
+Now launch the MySQL container, this time connected to the database
+network. The command will be as follows:
+docker run -d --network database --name mysql -p 3306:3306 -e
+MYSQL_ROOT_PASSWORD=dontusethisinprod mysql
+
+
+
+
+Docker lets us connect a container to another network on the fly very
+easily. To do this, type the following command:
+dockr network connect <network name> <container name>
+Since you need to connect the Adminer container to the database
+network, the command looks as so:
+docker network connect database adminer
+Let’s inspect the Adminer container now:
+
+
+
+Notice that the Networks key has two networks—the default bridge
+network and the database network that we just connected to. Since the
+container doesn’t need to be connected to the default bridge network, let’s
+disconnect it. To do this, use this command:
+docker network disconnect <network name> <container name>
+In this case, the command is as follows:
+docker network disconnect bridge adminer
+Examine the Adminer container:
+docker inspect adminer | jq .[0].NetworkSettings.Networks
+
+
+
+The bridge network is no longer attached to the Adminer network.
+Launch Adminer by navigating to http://localhost:8080.
+In the Server field, type the name of the container that you want to
+connect to, i.e. the database container named mysql. See Figure 6-4
+
+
+here we do such thing for easy part
+
+moral of the story is
+
+right now we dont need the ip address anymore
+
+we can now use the container or the database
+
+
+arlier you saw that there already exists a network called host. It’s not
+the name that governs whether or not the network is a host network, it’s the
+driver. We noticed that the host network has a host driver, and hence any
+container connected to the host network will run in host network mode.
+To start the container, you just have to pass the parameter --network
+host. Try the following command to start an nginx container and publish
+port 80 of the container to the host’s 8080 port.
+docker run -d --network host -p 8080:80 nginx:alpine
+
+
+Take care to replace <token> with the token generated from the earlier
+chapter. Let’s build the image. Note the extra RUN step, which runs one_
+time.py. This script creates the necessary database and tables required
+for our application. Another notable change is the addition of the VOLUME
+instruction. As you learned earlier, this is to tell Docker to mark the directory
+specified to be managed as a volume, even if you did not specify the required
+volume name in the docker run command. Let’s build the image.
+docker build --no-cache -t sathyabhat:subreddit_fetcher_network
+
+
+Let’s create a new network called subreddit_fetcher to which the
+containers will be connected. To do this, type the following:
+docker network create subreddit_fetcher
+Now create the required volumes for the app and the database:
+docker volume create subreddit_fetcher_app
+docker volume create subreddit_fetcher_db
+
+
+
+Let’s bring up a new MySQL container and connect it to this network. Since
+we’d like the data to persist, we will also mount the MySQL database to a
+volume called subreddit_fetecher_db. To do this, type the following
+command:
+docker run -d --name mysql --network subreddit_fetcher
+-v subreddIt_fetcher_db:/var/lib/myql -e MYSQL_ROOT_
+PASSWORD=dontusethisinprod mysql
+Let’s follow the logs and check that the MySQL database is up and running:
+docker logs -f subreddit_fetcher_db
+
+
+
+Now let’s bring up our project container while connecting it to the
+subreddit_fetcher network that we created. To do this, type the following:
+docker run --name subreddit_fetcher_app --network subreddit_
+fetcher -v subreddit_fetcher_app:/apps/subreddit_fetcher
+sathyabhat:subreddit_fetcher_network
+
+this is from chapter 7
+
+
+On Linux systems, you can download Docker Compose
+binary from its GitHub Release page. Alternatively, you
+can run the following curl command to download the
+correct binary.
+sudo curl -L https://github.com/docker/compose/releases/
+download/1.21.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/
+local/bin/docker-compose
+
+
+sudo chmod +x /usr/local/bin/docker-compose
+If the file was downloaded manually, take care to coptey the
+downloaded file to the /usr/local/bin directory before running the
+command. To confirm that the install was successful and is working
+correctly, run the following command:
+docker-compose version
+
+
+for view all the service running on docker-compose 
+the command should be 
+docker-compose up
+
+
+for stop the services 
+the command 
+docker-compose stop
+
+
+for start the services 
+the command 
+dockr-compose start
+
+
+for the docker-compose logs
+the command
+docker-compose logs
+
+By default, docker-compose logs will only show a snapshot of the logs.
+If you want the logs to be streamed continuously, you can append the -f or
+--follow flag to tell Docker to keep streaming the logs. Alternatively, if you
+want to see the last n logs from each container, you can type:
+docker-compose logs --tail=n
+where n is the required number of lines
+
+
+To completely tear down the containers, we can issue the following:
+docker-compose down
+
+
+we need to configure the yaml file fot the docker and 
+docker-compose configuration 
+docker-compose config
+
+
+after configuration we need to start the services
+Let’s run the service by typing the following:
+docker-compose up
+
+
+
